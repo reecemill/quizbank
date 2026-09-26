@@ -21,6 +21,14 @@
         <li>{% include "bank/includes/response_box.html" with number=forloop.counter viewer="instructor" gradable=True %}</li>
       {% endfor %}
     </ol>
+    {% if has_hand_graded and grader %}
+      <p class="group-footer ai-note">
+        AI suggestions compare each written answer with the question's model answer. On
+        {{ grader.questions }} questions it never saw, they agreed with human graders at r = {{ grader.pearson|floatformat:2 }},
+        where two human graders agree at r = {{ grader.human_pearson|floatformat:2 }}. They tend to give too much
+        credit to short answers that are wrong, so treat them as a starting point.
+      </p>
+    {% endif %}
     {% if has_hand_graded %}
       <div class="submit-bar">
         <span class="submit-bar-text">Give points for the written answers, then save.</span>

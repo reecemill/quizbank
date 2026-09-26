@@ -58,6 +58,21 @@ the points earned. `viewer` is "student" or "instructor" (for the wording), and
         <p class="essay-answer essay-answer--blank">No answer given.</p>
       {% endif %}
       {% if gradable %}
+        {% if response.suggested_points is not None %}
+          <div class="suggestion">
+            <span class="suggestion-chip">
+              <span class="suggestion-label">AI suggestion</span>
+              <strong>{{ response.suggested_points|num }}</strong> / {{ question.points|points }}
+            </span>
+            <button class="button button--tinted button--small" type="button"
+                    data-use-suggestion="{{ response.suggested_points|num }}" data-target="points-{{ response.pk }}">Use</button>
+          </div>
+        {% elif grader and response.text and not question.reference_answer %}
+          <p class="suggestion-hint">
+            Add a model answer to this question to get an AI suggestion.
+            {% if user.is_staff %}<a href="{% url 'admin:bank_question_change' question.pk %}">Add one</a>{% endif %}
+          </p>
+        {% endif %}
         <label class="grade-field">
           <span class="grade-label">Points</span>
           <input class="grade-input" type="number" name="points-{{ response.pk }}" inputmode="decimal"

@@ -15,10 +15,12 @@ from bank.qti import QUESTION_TYPES, html_to_text
 CANVAS_TYPES = {code: name for name, code in QUESTION_TYPES.items()}
 
 
-def q(kind, points, html, options=(), canvas_type=""):
+def q(kind, points, html, options=(), canvas_type="", reference=""):
     """One sample question. For choice questions, a leading * marks each
-    correct option; fill-in-the-blank options are all accepted answers."""
-    return {"kind": kind, "points": points, "html": html, "options": options, "canvas_type": canvas_type}
+    correct option; fill-in-the-blank options are all accepted answers.
+    Essays can have a model answer (`reference`) for the AI grader."""
+    return {"kind": kind, "points": points, "html": html, "options": options, "canvas_type": canvas_type,
+            "reference": reference}
 
 
 DEMO_COURSES = [
@@ -34,7 +36,10 @@ DEMO_COURSES = [
                   ["*Keyboard", "*Microphone", "Monitor", "*Mouse", "Printer"]),
                 q("FB", 1, "<p>The binary number <code>1010</code> equals ____ in decimal.</p>", ["10"]),
                 q("MC", 1, "<p>How many bits are in one byte?</p>", ["4", "*8", "16", "32"]),
-                q("ES", 5, "<p>Explain the difference between hardware and software. Give one example of each.</p>"),
+                q("ES", 5, "<p>Explain the difference between hardware and software. Give one example of each.</p>",
+                  reference="Hardware is the physical parts of a computer that you can touch, such as the CPU, memory, "
+                            "or a keyboard. Software is the programs and instructions that run on the hardware, "
+                            "such as an operating system or a web browser."),
             ]),
             ("Quiz 2: Programming Fundamentals", "You may use scratch paper.", [
                 q("MC", 2, "<p>What does this Python code print?</p><pre><code>x = 3\nprint(x * 2 + 1)</code></pre>",
@@ -45,7 +50,9 @@ DEMO_COURSES = [
                 q("FB", 1, "<p>The keyword that defines a function in Python is ____.</p>", ["def"]),
                 q("MC", 1, "<p>Which data structure is first in, first out (FIFO)?</p>",
                   ["Stack", "*Queue", "Tree", "Set"]),
-                q("ES", 5, "<p>Describe what a loop is, and give an example of when you would use one.</p>"),
+                q("ES", 5, "<p>Describe what a loop is, and give an example of when you would use one.</p>",
+                  reference="A loop repeats a block of code while a condition is true or for each item in a "
+                            "collection. For example, a for loop can add up every number in a list."),
             ]),
         ],
         "unassigned": [
@@ -66,7 +73,10 @@ DEMO_COURSES = [
                 q("FB", 1, "<p>Plants turn light into chemical energy through ____.</p>", ["photosynthesis"]),
                 q("MC", 1, "<p>Glucose is C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>. "
                            "How many carbon atoms are in one molecule of glucose?</p>", ["1", "*6", "12", "24"]),
-                q("ES", 5, "<p>Explain why cells divide, and name the two main types of cell division.</p>"),
+                q("ES", 5, "<p>Explain why cells divide, and name the two main types of cell division.</p>",
+                  reference="Cells divide so organisms can grow, repair damaged tissue, and reproduce. The two main "
+                            "types are mitosis, which makes two identical cells, and meiosis, which makes sex cells "
+                            "with half the chromosomes."),
             ]),
             ("Genetics", "", [
                 q("MC", 2, "<p>In pea plants, purple flowers (<em>P</em>) are dominant over white (<em>p</em>). "
@@ -94,7 +104,11 @@ DEMO_COURSES = [
                 q("FB", 1, "<p>The 1896 Supreme Court case that upheld “separate but equal” was "
                            "<em>Plessy v.</em> ____.</p>", ["Ferguson"]),
                 q("ES", 10, "<p>How did industrialization change daily life for American workers "
-                            "between 1870 and 1900?</p>"),
+                            "between 1870 and 1900?</p>",
+                  reference="Many workers moved from farms to cities to work in factories, with long hours, low pay, "
+                            "and dangerous conditions. Work became repetitive and was paced by machines, children often "
+                            "worked, and crowded tenements were common. Workers began forming labor unions and "
+                            "striking for better wages and hours."),
                 q("OT", 3, "<p>Match each inventor to the invention.</p>", canvas_type="matching_question"),
             ]),
         ],
@@ -113,6 +127,7 @@ def create_question(course, spec):
         text=html_to_text(spec["html"]),
         text_html=spec["html"],
         points=spec["points"],
+        reference_answer=spec["reference"],
         source_type=spec["canvas_type"] or CANVAS_TYPES.get(spec["kind"], ""),
     )
     for order, text in enumerate(spec["options"]):
@@ -124,11 +139,24 @@ def create_question(course, spec):
 class Command(BaseCommand):
     help = "Add sample courses, quizzes, and questions to explore the site with."
 
+    def add_model_answers(self, spec):
+        """Give demo essays from an older version of this command their model answers."""
+        added = 0
+        questions = [question for _, _, qs in spec["quizzes"] for question in qs] + spec["unassigned"]
+        for question_spec in questions:
+            if question_spec["reference"]:
+                added += Question.objects.filter(
+                    course__code=spec["code"], text=html_to_text(question_spec["html"]), reference_answer="",
+                ).update(reference_answer=question_spec["reference"])
+        return added
+
     @transaction.atomic
     def handle(self, *args, **options):
         for spec in DEMO_COURSES:
             if Course.objects.filter(code=spec["code"]).exists():
-                self.stdout.write(f"Skipped {spec['code']}: that course already exists.")
+                added = self.add_model_answers(spec)
+                note = f" Added {added} model answer{pluralize(added)}." if added else ""
+                self.stdout.write(f"Skipped {spec['code']}: that course already exists.{note}")
                 continue
 
             course = Course.objects.create(code=spec["code"], name=spec["name"])

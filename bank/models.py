@@ -44,6 +44,9 @@ class Question(models.Model):
 
     points = models.DecimalField(max_digits=6, decimal_places=2, default=1)
     image = models.ImageField(upload_to="question_images/", blank=True)
+    # For written answers: what a full-credit answer says. The AI grader
+    # compares student answers with it to suggest a score.
+    reference_answer = models.TextField(blank=True, help_text="A model answer, used to suggest scores for written answers.")
 
     # Canvas's own item id, so re-importing the same export can be detected.
     source_ident = models.CharField(max_length=100, blank=True, db_index=True)
@@ -57,6 +60,14 @@ class Question(models.Model):
 
     def __str__(self) -> str:
         return f"[{self.question_type}] {self.text[:60]}"
+
+    def save(self, *args, **kwargs):
+        # A new model answer makes old AI suggestions stale.
+        if self.pk:
+            old = Question.objects.filter(pk=self.pk).values_list("reference_answer", flat=True).first()
+            if old is not None and old != self.reference_answer:
+                self.responses.update(suggested_points=None)
+        super().save(*args, **kwargs)
 
 
 class AnswerOption(models.Model):
@@ -171,6 +182,9 @@ class Response(models.Model):
     selected = models.ManyToManyField(AnswerOption, blank=True)
     text = models.TextField(blank=True)
     points = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    # The AI grader's suggestion for a written answer (bank.suggestions), kept
+    # so the grading page doesn't recompute it.
+    suggested_points = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
 
     class Meta:
         ordering = ["order"]

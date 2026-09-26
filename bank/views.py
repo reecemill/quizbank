@@ -21,6 +21,7 @@ from .importer import import_qti
 from .ml.item_analysis import MIN_RELIABLE_STUDENTS
 from .models import Assignment, Course, Question, Response, Test
 from .qti import QTIError
+from .suggestions import fill_suggestions
 from .templatetags.bank_ui import num
 
 
@@ -434,9 +435,11 @@ class AttemptView(AssignmentMixin, TemplateView):
         responses = list(
             self.attempt.responses.select_related("question").prefetch_related("question__options", "selected")
         )
+        grader = fill_suggestions(responses)
         return super().get_context_data(
             attempt=self.attempt,
             responses=responses,
+            grader=grader.evaluation if grader else None,
             has_hand_graded=any(r.question.question_type in HAND_GRADED_TYPES for r in responses),
             **kwargs,
         )

@@ -6,6 +6,8 @@ See .env.example for the full list.
 """
 
 import os
+import sys
+import tempfile
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
@@ -95,6 +97,17 @@ LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
+
+# Machine learning: where downloaded datasets and trained models live, and which
+# text embedder to use ("minilm" for the real model; "hashing" is a fast,
+# offline stand-in the tests use).
+QUIZBANK_DATA_DIR = Path(os.environ.get("QUIZBANK_DATA_DIR", BASE_DIR / "data"))
+QUIZBANK_EMBEDDER = os.environ.get("QUIZBANK_EMBEDDER", "minilm")
+
+# Tests never touch local datasets or trained models, and never download anything.
+if len(sys.argv) > 1 and sys.argv[1] == "test":
+    QUIZBANK_DATA_DIR = Path(tempfile.mkdtemp(prefix="quizbank-test-data-"))
+    QUIZBANK_EMBEDDER = "hashing"
 
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "bank:dashboard"

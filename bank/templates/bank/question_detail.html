@@ -10,6 +10,18 @@
 {% block content %}
   {% include "bank/includes/question_box.html" %}
 
+  {% if question.question_type == "ES" or question.question_type == "OT" %}
+    <section class="group">
+      <h2 class="group-header">Model answer</h2>
+      {% if question.reference_answer %}
+        <div class="card prose">{{ question.reference_answer|linebreaks }}</div>
+        <p class="group-footer">The AI grader compares student answers with this to suggest a score.</p>
+      {% else %}
+        <div class="card row--muted">No model answer yet.{% if user.is_staff %} <a href="{% url 'admin:bank_question_change' question.pk %}">Add one</a> so the AI grader can suggest scores.{% endif %}</div>
+      {% endif %}
+    </section>
+  {% endif %}
+
   <section class="group">
     <h2 class="group-header">Details</h2>
     <dl class="details">

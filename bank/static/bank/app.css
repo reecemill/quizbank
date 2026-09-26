@@ -2389,6 +2389,32 @@ a.row[data-band] { --glow: var(--tone); }
   .submit-bar { padding-left: 18px; }
 }
 
+/* AI grading suggestions */
+.suggestion { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.suggestion-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in srgb, var(--violet) 45%, transparent);
+  border-radius: 999px;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--violet) 16%, transparent),
+    color-mix(in srgb, #22D3EE 10%, transparent));
+  box-shadow: 0 0 20px -8px var(--violet);
+  font-size: 13.5px;
+}
+.suggestion-chip strong { font-family: var(--font-mono); }
+.suggestion-label {
+  color: var(--accent-text);
+  font: 600 10.5px/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.suggestion-hint { margin: 0; color: var(--text-2); font-size: 13px; }
+.ai-note { margin: -8px 4px 18px; }
+
 /* Question analytics */
 
 .sim-badge {

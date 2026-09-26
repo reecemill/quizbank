@@ -302,6 +302,17 @@
   document.addEventListener("focusout", hideTip);
   addEventListener("scroll", () => { tip.hidden = true; }, { passive: true });
 
+  // "Use" on an AI suggestion fills in the points box.
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest?.("[data-use-suggestion]");
+    if (!button) return;
+    const field = document.querySelector(`input[name="${CSS.escape(button.dataset.target)}"]`);
+    if (!field) return;
+    field.value = button.dataset.useSuggestion;
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    field.focus();
+  });
+
   // Toasts: close on click; confirmations fade away on their own.
   const dismiss = (banner) => {
     banner.classList.add("is-leaving");
