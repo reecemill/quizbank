@@ -1,17 +1,18 @@
 # quizbank-ai
 
-A question bank for instructors: import quizzes from Canvas, then search, de-duplicate, and tag questions with machine learning.
+A question bank for instructors: import quizzes from Canvas, browse and search the questions, and give quizzes to students online with automatic grading.
 
-This is a rework of **QuizPress**, a CS senior design project. The original team built a Django app that converts Canvas quizzes into printable tests. This version keeps the part with the most lasting value, the Canvas importer and the question data model, and rebuilds it as a focused tool with ML features on top.
+This is a rework of **QuizPress**, a CS senior design project. The original team built a Django app that converts Canvas quizzes into printable tests. This version keeps the part with the most lasting value, the Canvas importer and the question data model, and rebuilds it as a focused tool with a modern web interface and online quizzes.
 
 ## Status
 
 | Stage | What | Status |
 |---|---|---|
 | 1 | Clean foundation: Canvas QTI importer, data model, tests | ✅ Done |
-| 2 | Smart question bank: semantic search, duplicate detection, auto-tagging, with evaluation | Next |
-| 3 | LLM question generation, with an evaluation of output quality | Planned |
-| 4 | Web UI and deployment | Core pages done; deployment planned |
+| 2 | Web UI: dashboard, question bank with search, quiz pages, import from the browser | ✅ Done |
+| 3 | Online quizzes: share links, automatic grading, results and essay grading | ✅ Done |
+
+Ideas that weren't built: semantic search, duplicate detection, and auto-tagging with machine learning; LLM-generated questions; and deploying the app publicly.
 
 ## What works now
 
@@ -77,7 +78,7 @@ The tests build Canvas-style exports in memory, so no sample files or network ac
   - Correct answers come from the scoring rule, not from Canvas's per-answer feedback rules.
 - **Imports are all-or-nothing.** A bad file writes nothing to the database.
 - **No secrets in the code.** Credentials and keys come from environment variables. Uploaded XML is parsed with `defusedxml`.
-- **Slimmed down.** The publisher, template, cover-page, and feedback features and their dashboards were dropped to make room for the ML work.
+- **Slimmed down.** The publisher, template, cover-page, and feedback features and their dashboards were dropped to keep the project focused.
 
 ## Credits
 
