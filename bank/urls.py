@@ -10,6 +10,7 @@ urlpatterns = [
     path("questions/<int:pk>/", views.QuestionDetailView.as_view(), name="question"),
     path("courses/<int:pk>/", views.QuestionListView.as_view(), name="course"),
     path("courses/<int:pk>/quizzes/", views.QuizListView.as_view(), name="course_quizzes"),
+    path("courses/<int:pk>/topics/", views.FindTopicsView.as_view(), name="find_topics"),
     path("quizzes/<int:pk>/", views.QuizDetailView.as_view(), name="quiz"),
     path("quizzes/<int:pk>/give/", views.GiveQuizView.as_view(), name="give"),
     path("import/", views.ImportView.as_view(), name="import"),

@@ -25,6 +25,22 @@ class Course(models.Model):
         return f"{self.code} - {self.name}" if self.name else self.code
 
 
+class Topic(models.Model):
+    """A group of similar questions in a course, found without labels by
+    bank.ml.topics (sentence embeddings + k-means). Rebuilt on request."""
+
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="topics")
+    label = models.CharField(max_length=120)
+    keywords = models.JSONField(default=list)
+    size = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["-size", "label"]
+
+    def __str__(self) -> str:
+        return f"{self.course.code}: {self.label}"
+
+
 class Question(models.Model):
     class Type(models.TextChoices):
         MULTIPLE_CHOICE = "MC", "Multiple choice"
@@ -47,6 +63,7 @@ class Question(models.Model):
     # For written answers: what a full-credit answer says. The AI grader
     # compares student answers with it to suggest a score.
     reference_answer = models.TextField(blank=True, help_text="A model answer, used to suggest scores for written answers.")
+    topic = models.ForeignKey(Topic, on_delete=models.SET_NULL, null=True, blank=True, related_name="questions")
 
     # Canvas's own item id, so re-importing the same export can be detected.
     source_ident = models.CharField(max_length=100, blank=True, db_index=True)
@@ -68,6 +85,16 @@ class Question(models.Model):
             if old is not None and old != self.reference_answer:
                 self.responses.update(suggested_points=None)
         super().save(*args, **kwargs)
+
+
+class QuestionEmbedding(models.Model):
+    """A cached sentence embedding of a question's text, so topics can be
+    rebuilt without re-embedding questions that haven't changed."""
+
+    question = models.OneToOneField(Question, on_delete=models.CASCADE, related_name="embedding")
+    model = models.CharField(max_length=100)
+    text_hash = models.CharField(max_length=64)
+    vector = models.BinaryField()
 
 
 class AnswerOption(models.Model):

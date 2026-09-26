@@ -127,3 +127,26 @@ def load_unt(data_dir: Path | None = None) -> pd.DataFrame:
 def parse_unt_bytes(data: bytes) -> pd.DataFrame:
     with zipfile.ZipFile(io.BytesIO(data)) as archive:
         return parse_unt(archive)
+
+
+# --------------------------------------------------------------------------
+# Question sets for topic modeling (Hugging Face parquet files)
+# --------------------------------------------------------------------------
+
+SCIQ_URL = "https://huggingface.co/datasets/allenai/sciq/resolve/main/data/train-00000-of-00001.parquet"
+MMLU_URL = "https://huggingface.co/datasets/cais/mmlu/resolve/main/all/test-00000-of-00001.parquet"
+
+
+def load_sciq(data_dir: Path | None = None) -> pd.DataFrame:
+    """SciQ (Welbl, Liu & Gardner, 2017; CC BY-NC 3.0): 11,679 crowdsourced science
+    exam questions with a correct answer and three distractors each.
+    Columns: question, correct_answer, distractor1-3, support."""
+    path = download(SCIQ_URL, (data_dir or default_data_dir()) / "sciq-train.parquet")
+    return pd.read_parquet(path)
+
+
+def load_mmlu(data_dir: Path | None = None) -> pd.DataFrame:
+    """MMLU test set (Hendrycks et al., 2021; MIT license): 14,042 multiple-choice
+    questions labeled with one of 57 subjects. Columns: question, subject, choices, answer."""
+    path = download(MMLU_URL, (data_dir or default_data_dir()) / "mmlu-test.parquet")
+    return pd.read_parquet(path)

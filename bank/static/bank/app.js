@@ -302,6 +302,9 @@
   document.addEventListener("focusout", hideTip);
   addEventListener("scroll", () => { tip.hidden = true; }, { passive: true });
 
+  // On phones the topic chips scroll sideways; bring the chosen one into view.
+  document.querySelector(".chips--topics [aria-current]")?.scrollIntoView({ block: "nearest", inline: "center" });
+
   // "Use" on an AI suggestion fills in the points box.
   document.addEventListener("click", (event) => {
     const button = event.target.closest?.("[data-use-suggestion]");

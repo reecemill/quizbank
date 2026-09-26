@@ -17,6 +17,29 @@
     {% if type_code %}<input type="hidden" name="type" value="{{ type_code }}">{% endif %}
   </form>
 
+  {% if course and topic_chips or course and can_find_topics %}
+    <div class="topic-bar">
+      <span class="topic-bar-label">{% include "bank/icons/list.svg" %}Topics</span>
+      {% if topic_chips %}
+        <nav class="chips chips--topics" aria-label="Topic">
+          {% for chip in topic_chips %}
+            <a class="chip chip--topic" href="{{ chip.url }}"{% if chip.selected %} aria-current="true" title="Showing this topic. Click again to show all."{% endif %}>
+              {{ chip.label }}<span class="chip-count">{{ chip.size }}</span>
+            </a>
+          {% endfor %}
+        </nav>
+      {% else %}
+        <span class="topic-bar-hint">Group this course's questions by topic, found automatically from their meaning.</span>
+      {% endif %}
+      {% if can_find_topics %}
+        <form method="post" action="{% url 'bank:find_topics' course.pk %}">
+          {% csrf_token %}
+          <button class="button button--tinted button--small" type="submit">{% if topic_chips %}Refresh topics{% else %}Find topics{% endif %}</button>
+        </form>
+      {% endif %}
+    </div>
+  {% endif %}
+
   <div id="results">
     <nav class="chips" aria-label="Question type">
       {% for chip in type_chips %}
@@ -38,7 +61,9 @@
                 {% include "bank/includes/type_badge.html" %}
                 <span class="row-main">
                   <span class="row-title clamp-2">{{ question.text|default:"(No text)" }}</span>
-                  {% if not course %}<span class="row-sub">{{ question.course.code }}</span>{% endif %}
+                  {% if not course or question.topic %}
+                    <span class="row-sub">{% if not course %}{{ question.course.code }}{% endif %}{% if not course and question.topic %} · {% endif %}{% if question.topic %}<span class="topic-tag">{{ question.topic.label }}</span>{% endif %}</span>
+                  {% endif %}
                 </span>
                 <span class="row-detail">{{ question.points|points }}</span>
                 {% include "bank/icons/arrow-forward.svg" %}

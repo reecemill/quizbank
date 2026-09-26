@@ -22,6 +22,7 @@ from .ml.item_analysis import MIN_RELIABLE_STUDENTS
 from .models import Assignment, Course, Question, Response, Test
 from .qti import QTIError
 from .suggestions import fill_suggestions
+from .topics import MAX_IN_BROWSER, MIN_QUESTIONS, build_topics
 from .templatetags.bank_ui import num
 
 
@@ -85,7 +86,8 @@ class DashboardView(PageMixin, TemplateView):
 class QuestionListView(PageMixin, ListView):
     """Every question, or one course's questions (the course home page).
 
-    Filters: ?q= matches question text, ?type= is a Question.Type code.
+    Filters: ?q= matches question text, ?type= is a Question.Type code, and on
+    a course page ?topic= is one of the course's topics.
     """
 
     template_name = "bank/question_list.html"
@@ -99,11 +101,16 @@ class QuestionListView(PageMixin, ListView):
         self.query = request.GET.get("q", "").strip()
         type_code = request.GET.get("type", "")
         self.type_code = type_code if type_code in Question.Type.values else ""
+        topic_id = request.GET.get("topic", "")
+        self.topic = (self.course.topics.filter(pk=topic_id).first()
+                      if self.course and topic_id.isdigit() else None)
 
     def get_queryset(self):
-        questions = Question.objects.select_related("course")
+        questions = Question.objects.select_related("course", "topic")
         if self.course:
             questions = questions.filter(course=self.course)
+        if self.topic:
+            questions = questions.filter(topic=self.topic)
         if self.query:
             # A plain text match for now. Semantic search (stage 2) replaces this.
             questions = questions.filter(text__icontains=self.query)
@@ -141,20 +148,52 @@ class QuestionListView(PageMixin, ListView):
             }
             for code, label in [("", "All"), *Question.Type.choices]
         ]
+        topic_chips, can_find_topics = [], False
+        if self.course:
+            topic_chips = [
+                {
+                    "label": topic.label,
+                    "size": topic.size,
+                    "url": f"?{qs}" if (qs := self.query_string(topic=None if self.topic == topic else topic.pk))
+                    else self.request.path,
+                    "selected": self.topic == topic,
+                }
+                for topic in self.course.topics.all()
+            ]
+            count = self.course.questions.count()
+            can_find_topics = MIN_QUESTIONS <= count <= MAX_IN_BROWSER
         return super().get_context_data(
             course=self.course,
             query=self.query,
             type_code=self.type_code,
             type_chips=chips,
+            topic=self.topic,
+            topic_chips=topic_chips,
+            can_find_topics=can_find_topics,
             page_query=self.query_string(),
             **kwargs,
         )
 
 
+class FindTopicsView(View):
+    """Group a course's questions into topics (POST only)."""
+
+    def post(self, request, pk):
+        course = get_object_or_404(Course, pk=pk)
+        count = course.questions.count()
+        if not MIN_QUESTIONS <= count <= MAX_IN_BROWSER:
+            messages.error(request, f"Topics need between {MIN_QUESTIONS} and {MAX_IN_BROWSER:,} questions here; "
+                                    f"for bigger courses, run manage.py build_topics.")
+        else:
+            topics = build_topics(course)
+            messages.success(request, f"Grouped {count} questions into {len(topics)} topics.")
+        return redirect("bank:course", pk=course.pk)
+
+
 class QuestionDetailView(PageMixin, DetailView):
     template_name = "bank/question_detail.html"
     context_object_name = "question"
-    queryset = Question.objects.select_related("course").prefetch_related("options", "tests")
+    queryset = Question.objects.select_related("course", "topic").prefetch_related("options", "tests")
     title = "Question"
     nav = "course"
 

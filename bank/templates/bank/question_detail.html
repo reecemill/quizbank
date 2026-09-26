@@ -27,6 +27,9 @@
     <dl class="details">
       <div class="detail"><dt>Course</dt><dd><a href="{% url 'bank:course' question.course.pk %}">{{ question.course }}</a></dd></div>
       <div class="detail"><dt>Type</dt><dd>{{ question.get_question_type_display }}</dd></div>
+      {% if question.topic %}
+        <div class="detail"><dt>Topic</dt><dd><a href="{% url 'bank:course' question.course.pk %}?topic={{ question.topic.pk }}">{{ question.topic.label }}</a></dd></div>
+      {% endif %}
       {% if question.question_type == "OT" and question.source_type %}
         <div class="detail"><dt>Canvas type</dt><dd>{{ question.source_type }}</dd></div>
       {% endif %}
