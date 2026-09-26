@@ -1,0 +1,4 @@
+django>=5.1,<5.2
+beautifulsoup4>=4.12
+defusedxml>=0.7
+pillow>=10
