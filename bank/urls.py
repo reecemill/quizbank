@@ -16,6 +16,7 @@ urlpatterns = [
 
     # A quiz given to students: its results, settings, and each student's attempt.
     path("given/<str:code>/", views.ResultsView.as_view(), name="results"),
+    path("given/<str:code>/analytics/", views.AnalyticsView.as_view(), name="analytics"),
     path("given/<str:code>/settings/", views.AssignmentSettingsView.as_view(), name="assignment_settings"),
     path("given/<str:code>/results.csv", views.ResultsCSVView.as_view(), name="results_csv"),
     path("given/<str:code>/<int:attempt_pk>/", views.AttemptView.as_view(), name="attempt"),

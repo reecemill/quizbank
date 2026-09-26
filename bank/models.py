@@ -124,6 +124,9 @@ class Assignment(models.Model):
     show_answers = models.BooleanField(
         default=False, help_text="After submitting, students see which answers were right."
     )
+    is_simulated = models.BooleanField(
+        default=False, help_text="Filled with simulated students (manage.py simulate_class), not real ones."
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -14,9 +14,11 @@ from django.utils.text import slugify
 from django.views import View
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 
+from .analytics import analyze_assignment
 from .forms import ImportForm
 from .grading import CENT, HAND_GRADED_TYPES
 from .importer import import_qti
+from .ml.item_analysis import MIN_RELIABLE_STUDENTS
 from .models import Assignment, Course, Question, Response, Test
 from .qti import QTIError
 from .templatetags.bank_ui import num
@@ -337,6 +339,31 @@ class ResultsView(AssignmentMixin, TemplateView):
             average=round(sum(a.percent for a in attempts) / len(attempts)) if attempts else None,
             to_grade=sum(a.num_pending for a in attempts),
             breakdown=breakdown,
+            **kwargs,
+        )
+
+
+class AnalyticsView(AssignmentMixin, TemplateView):
+    """Item analysis: how hard each question was, whether it told strong and
+    weak students apart, which wrong answers drew students in, and how
+    reliable the quiz was as a whole."""
+
+    template_name = "bank/analytics.html"
+    title = "Analytics"
+
+    def get_subtitle(self):
+        return self.quiz.title
+
+    def get_crumbs(self):
+        return self.quiz_crumbs(
+            ("Results", reverse("bank:results", args=[self.assignment.code])),
+            ("Analytics", None),
+        )
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(
+            report=analyze_assignment(self.assignment),
+            min_students=MIN_RELIABLE_STUDENTS,
             **kwargs,
         )
 

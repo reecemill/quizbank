@@ -2,7 +2,8 @@
 .venv/
 .env
 
-# Local data
+# Local data (datasets and trained models are downloaded or built, never committed)
+data/
 db.sqlite3
 media/
 staticfiles/

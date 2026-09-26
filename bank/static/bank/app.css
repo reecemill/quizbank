@@ -2389,6 +2389,279 @@ a.row[data-band] { --glow: var(--tone); }
   .submit-bar { padding-left: 18px; }
 }
 
+/* Question analytics */
+
+.sim-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  border: 1px dashed color-mix(in srgb, var(--amber) 60%, transparent);
+  border-radius: 999px;
+  color: var(--text);
+  font: 600 11px/1 var(--font-mono);
+  letter-spacing: 0.04em;
+  vertical-align: 2px;
+}
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--sky) 40%, transparent);
+  border-radius: var(--r);
+  background: color-mix(in srgb, var(--sky) 9%, transparent);
+  font-size: 14px;
+}
+.notice > .icon { width: 18px; height: 18px; margin-top: 1px; color: var(--sky); }
+
+.stats--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.stats--4 .stat-value { font-variant-numeric: normal; }
+
+/* Charts: thin marks, hairline grid, text in text colors */
+.chart-card {
+  margin: 0;
+  padding: 18px 18px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: inset 0 1px 0 var(--glass-edge), var(--shadow);
+}
+.chart-caption { margin: 10px 0 0; color: var(--text-2); font-size: 13px; }
+
+.hist { padding-left: 30px; }
+.hist-plot { position: relative; height: 180px; }
+.hist-grid {
+  position: absolute;
+  right: 0;
+  left: 0;
+  border-top: 1px solid var(--line);
+}
+.hist-tick {
+  position: absolute;
+  top: 0;
+  left: -30px;
+  width: 22px;
+  color: var(--text-2);
+  font: 500 11px/1 var(--font-mono);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  transform: translateY(-50%);
+}
+.hist-bars {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+}
+.hist-slot {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: default;
+  outline-offset: -2px;
+}
+.hist-slot:hover,
+.hist-slot:focus-visible { background: var(--fill); }
+.hist-bar {
+  display: block;
+  width: min(24px, 60%);
+  min-height: 2px;
+  border-radius: 4px 4px 0 0;
+  background: var(--violet);
+  transition: filter 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.hist-slot:hover .hist-bar,
+.hist-slot:focus-visible .hist-bar {
+  filter: brightness(1.2);
+  box-shadow: 0 0 18px -2px var(--violet);
+}
+.hist-x {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  margin-top: 6px;
+  color: var(--text-2);
+  font: 500 11px/1 var(--font-mono);
+}
+.hist-x span { justify-self: start; transform: translateX(-50%); }
+.hist-x .hist-x-end { position: absolute; right: 0; transform: translateX(50%); }
+
+.table-view { margin-top: 10px; }
+.table-view summary {
+  color: var(--accent-text);
+  font-size: 13px;
+  cursor: pointer;
+}
+.data-table {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.data-table th,
+.data-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+.data-table thead th {
+  color: var(--text-2);
+  font: 500 11px/1.2 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.data-table td { font-variant-numeric: tabular-nums; }
+.data-table tbody th { font-weight: 400; }
+
+/* One row per question, opening to its answer breakdown */
+.item-list { overflow: visible; }
+.item-row > summary { list-style: none; }
+.item-row > summary::-webkit-details-marker { display: none; }
+.item-summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 150px 170px 20px;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: background-color 0.2s var(--ease);
+}
+.item-summary:hover { background: var(--glass-hover); }
+.item-summary:focus-visible { outline-offset: -2px; }
+.item-main { display: grid; gap: 8px; min-width: 0; }
+
+.item-chevron { color: var(--text-3); transition: transform 0.3s var(--ease-out); }
+.item-chevron .icon { width: 16px; height: 16px; }
+.item-row[open] .item-chevron { transform: rotate(180deg); }
+
+.metric { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 10px; }
+.metric-label {
+  grid-column: 1 / -1;
+  color: var(--text-2);
+  font: 500 10.5px/1 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.metric .meter { width: 100%; }
+.metric-value { min-width: 38px; color: var(--text); font: 600 13px/1 var(--font-mono); text-align: right; }
+
+/* Discrimination: a diverging bar around a neutral zero line.
+   Positive (good) extends right in a cool hue; negative extends left in a warm one. */
+.diverge {
+  position: relative;
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--fill-2);
+}
+.diverge::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  left: 50%;
+  width: 1px;
+  background: var(--text-3);
+}
+.diverge > span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--w);
+  border-radius: 999px;
+}
+.diverge[data-sign="pos"] > span {
+  left: 50%;
+  background: var(--sky);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--sky) 70%, transparent);
+}
+.diverge[data-sign="neg"] > span {
+  right: 50%;
+  background: var(--rose);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--rose) 70%, transparent);
+}
+
+.meter--plain > span { background: var(--violet); box-shadow: 0 0 10px color-mix(in srgb, var(--violet) 60%, transparent); }
+
+/* Flags: an icon and a label in text color; the severity hue marks the chip */
+.flags { display: flex; flex-wrap: wrap; gap: 6px; }
+.flag {
+  --tone: var(--sky);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 9px 0 7px;
+  border: 1px solid color-mix(in srgb, var(--tone) 45%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tone) 12%, transparent);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 550;
+  white-space: nowrap;
+}
+.flag .icon { width: 14px; height: 14px; color: var(--tone); }
+.flag[data-severity="critical"] { --tone: var(--rose); box-shadow: 0 0 16px -6px var(--rose); }
+.flag[data-severity="warning"] { --tone: var(--amber); }
+.flag--small { height: 20px; margin: 4px 0 0; padding: 0 8px; font-size: 11px; }
+
+.item-detail {
+  padding: 4px 18px 16px 64px;
+  border-top: 1px solid var(--line);
+  background: var(--fill);
+}
+.option-table tr.is-key th { font-weight: 600; }
+.option-name { display: inline-flex; align-items: center; gap: 8px; margin-right: 8px; }
+.key-mark { display: inline-grid; color: var(--emerald); }
+.key-mark .icon { width: 16px; height: 16px; }
+.pick-share { display: inline-flex; align-items: center; gap: 8px; }
+.pick-share-bar {
+  display: inline-block;
+  width: calc(var(--p) * 0.6px);
+  min-width: 2px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--violet);
+}
+.item-note { margin: 10px 0 0; color: var(--text-2); font-size: 13px; }
+
+/* Tooltip for chart marks (app.js positions it and fills it with textContent) */
+.tip {
+  position: fixed;
+  z-index: 80;
+  max-width: 280px;
+  padding: 7px 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.5);
+  color: var(--text);
+  font-size: 12.5px;
+  line-height: 1.4;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 10px));
+}
+
+@media (max-width: 899.98px) {
+  .item-summary { grid-template-columns: auto minmax(0, 1fr) 20px; }
+  .item-summary .metric { grid-column: 2 / 3; }
+  .item-detail { padding-left: 18px; }
+}
+@media (max-width: 767.98px) {
+  .stats--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .data-table { font-size: 12.5px; }
+  .data-table th, .data-table td { padding: 7px 6px; }
+}
+
 /* 6. Motion and preferences ---------------------------------------------------------- */
 
 /* Cards and rows rise in on first load (app.js adds .settled afterwards, so
@@ -2433,7 +2706,7 @@ a.row[data-band] { --glow: var(--tone); }
     --glass-strong: #FFFFFF;
   }
   body::before, body::after { display: none; }
-  .navbar::before, .tabs, .tab-lens, .menu-panel, .palette, .share, .stat, .done-card, .submit-bar, .list, .card, .details, .qbox, .course-card, .segmented,
+  .navbar::before, .tabs, .tab-lens, .menu-panel, .palette, .share, .stat, .done-card, .submit-bar, .chart-card, .tip, .list, .card, .details, .qbox, .course-card, .segmented,
   .dropzone, .login-card, .empty-icon, .banner, .search-field--page {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;

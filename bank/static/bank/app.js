@@ -277,6 +277,31 @@
     });
   });
 
+  // Chart tooltips: any element with data-tip shows it on hover and on
+  // keyboard focus. The text goes in with textContent, never as HTML.
+  const tip = document.createElement("div");
+  tip.className = "tip";
+  tip.setAttribute("role", "tooltip");
+  tip.hidden = true;
+  document.body.append(tip);
+  const showTip = (event) => {
+    const target = event.target.closest?.("[data-tip]");
+    if (!target) return;
+    tip.textContent = target.dataset.tip;
+    const box = target.getBoundingClientRect();
+    tip.style.left = `${Math.min(Math.max(box.left + box.width / 2, 150), innerWidth - 150)}px`;
+    tip.style.top = `${Math.max(box.top, 60)}px`;
+    tip.hidden = false;
+  };
+  const hideTip = (event) => {
+    if (event.target.closest?.("[data-tip]")) tip.hidden = true;
+  };
+  document.addEventListener("pointerover", showTip);
+  document.addEventListener("pointerout", hideTip);
+  document.addEventListener("focusin", showTip);
+  document.addEventListener("focusout", hideTip);
+  addEventListener("scroll", () => { tip.hidden = true; }, { passive: true });
+
   // Toasts: close on click; confirmations fade away on their own.
   const dismiss = (banner) => {
     banner.classList.add("is-leaving");

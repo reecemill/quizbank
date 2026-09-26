@@ -1,9 +1,14 @@
 {% extends "bank/base.html" %}
 {% load bank_ui %}
 
+{% block subtitle %}
+  <p class="subtitle">{{ quiz.title }}{% if assignment.is_simulated %} · <span class="sim-badge">Simulated class</span>{% endif %}</p>
+{% endblock %}
+
 {% block head_actions %}
   {% if attempts %}
     <a class="button button--tinted" href="{% url 'bank:results_csv' assignment.code %}">{% include "bank/icons/download.svg" %}Download CSV</a>
+    <a class="button button--filled" href="{% url 'bank:analytics' assignment.code %}">{% include "bank/icons/list.svg" %}Analytics</a>
   {% endif %}
 {% endblock %}
 
@@ -88,7 +93,10 @@
           </li>
         {% endfor %}
       </ul>
-      <p class="group-footer">The share of points the class earned on each question, from the answers graded so far.</p>
+      <p class="group-footer">
+        The share of points the class earned on each question, from the answers graded so far.
+        <a href="{% url 'bank:analytics' assignment.code %}">See which questions work well and which need fixing</a>.
+      </p>
     </section>
   {% endif %}
 {% endblock %}

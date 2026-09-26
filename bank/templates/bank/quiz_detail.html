@@ -28,7 +28,7 @@
               <span class="row-icon" style="--c: {{ course|course_color }}">{% include "bank/icons/school.svg" %}</span>
               <span class="row-main">
                 <span class="row-title">Link <span class="mono">{{ given.code }}</span></span>
-                <span class="row-sub">{{ given.num_attempts }} submission{{ given.num_attempts|pluralize }} · {% if given.is_open %}open{% else %}closed{% endif %}</span>
+                <span class="row-sub">{% if given.is_simulated %}simulated class · {% endif %}{{ given.num_attempts }} submission{{ given.num_attempts|pluralize }} · {% if given.is_open %}open{% else %}closed{% endif %}</span>
               </span>
               <span class="row-detail">Results</span>
               {% include "bank/icons/arrow-forward.svg" %}

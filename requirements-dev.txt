@@ -1,0 +1,6 @@
+# For re-running the notebooks in notebooks/.
+-r requirements.txt
+jupyter
+nbconvert
+nbformat
+matplotlib>=3.9
