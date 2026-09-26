@@ -1,0 +1,53 @@
+{% load static %}<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#F4F5FA" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#07080D" media="(prefers-color-scheme: dark)">
+  <title>{% block title %}{{ title }}{% endblock %} · QuizBank</title>
+  <link rel="icon" href="{% static 'bank/icon.svg' %}" type="image/svg+xml">
+  <link rel="preload" href="{% static 'bank/fonts/Geist-Variable.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'bank/fonts/GeistMono-Variable.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'bank/app.css' %}">
+  <script>document.documentElement.classList.replace("no-js", "js");</script>
+  <script src="{% static 'bank/app.js' %}" defer></script>
+</head>
+<body>
+{% block body %}
+  <a class="skip-link" href="#content">Skip to content</a>
+  {% include "bank/includes/navbar.html" %}
+
+  <main class="content {% block content_class %}{% endblock %}" id="content" tabindex="-1">
+    {% if back %}
+      <a class="back-link" href="{{ back.1 }}">{% include "bank/icons/chevron-back.svg" %}<span>{{ back.0 }}</span></a>
+    {% endif %}
+    {% if crumbs|length > 1 %}
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <ol>
+          {% for label, url in crumbs %}
+            {% if forloop.last %}
+              <li aria-current="page">{{ label }}</li>
+            {% else %}
+              <li><a href="{{ url }}">{{ label }}</a></li>
+            {% endif %}
+          {% endfor %}
+        </ol>
+      </nav>
+    {% endif %}
+    <div class="page-head">
+      <div class="page-head-text">
+        <h1 class="page-title">{{ title }}</h1>
+        {% block subtitle %}{% if subtitle %}<p class="subtitle">{{ subtitle }}</p>{% endif %}{% endblock %}
+      </div>
+      <div class="page-head-actions">{% block head_actions %}{% endblock %}{% block actions %}{% endblock %}</div>
+    </div>
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include "bank/includes/palette.html" %}
+{% endblock %}
+{% include "bank/includes/banners.html" %}
+</body>
+</html>

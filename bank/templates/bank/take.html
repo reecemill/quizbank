@@ -1,0 +1,96 @@
+{% extends "bank/base.html" %}
+{% load bank_ui %}
+
+{% block title %}{{ quiz.title }}{% endblock %}
+
+{% block body %}
+  <a class="skip-link" href="#content">Skip to content</a>
+  {% include "bank/includes/student_bar.html" %}
+
+  <main class="content" id="content" tabindex="-1">
+    <div class="page-head">
+      <div class="page-head-text">
+        <h1 class="page-title">{{ quiz.title }}</h1>
+        <p class="subtitle">{{ course.code }}{% if course.name %} · {{ course.name }}{% endif %} · {{ items|length }} question{{ items|length|pluralize }} · {{ total_points|points }}</p>
+      </div>
+    </div>
+
+    {% if not assignment.is_open %}
+      {% include "bank/includes/empty_state.html" with icon="bank/icons/school.svg" title="This quiz is closed" text="Your instructor isn't taking answers right now. Ask them if you think that's a mistake." %}
+    {% else %}
+      {# Only the questions and choices are on this page. Which answers are right stays on the server. #}
+      <form method="post" data-take>
+        {% csrf_token %}
+        <section class="group">
+          <h2 class="group-header">About you</h2>
+          <div class="list list--form">
+            <label class="row field">
+              <span class="field-label">Name</span>
+              <input type="text" name="student_name" value="{{ request.POST.student_name|default:'' }}" placeholder="First and last name"
+                     required maxlength="100" autocomplete="name" autofocus>
+            </label>
+          </div>
+          {% if name_error %}<p class="field-error" role="alert">{{ name_error }}</p>{% endif %}
+          <p class="group-footer">Your instructor sees your name next to your score. You can submit once.</p>
+        </section>
+
+        {% if quiz.instructions %}
+          <section class="group">
+            <h2 class="group-header">Instructions</h2>
+            <div class="card prose">{{ quiz.instructions|linebreaks }}</div>
+          </section>
+        {% endif %}
+
+        <ol class="question-stack">
+          {% for item in items %}
+            {% with question=item.question kind=item.question.question_type %}
+              <li>
+                <section class="qbox" role="group" aria-labelledby="question-title-{{ question.pk }}" data-question data-spotlight>
+                  <header class="qbox-head">
+                    <h2 class="qbox-title" id="question-title-{{ question.pk }}">Question {{ forloop.counter }}</h2>
+                    {% include "bank/includes/type_badge.html" %}
+                    <span class="qbox-points">{{ question.points|points }}</span>
+                  </header>
+                  <div class="qbox-body">
+                    <div class="prose">{{ question|question_html }}</div>
+                    {% if question.image %}
+                      <figure class="qbox-figure"><img src="{{ question.image.url }}" alt="Image for this question" loading="lazy"></figure>
+                    {% endif %}
+                  </div>
+
+                  {% if kind == "MC" or kind == "TF" or kind == "MS" %}
+                    {% if kind == "MS" and "select all" not in question.text|lower %}<p class="qbox-hint">Select all that apply.</p>{% endif %}
+                    <div class="answers{% if kind == 'MS' %} answers--multi{% endif %}">
+                      {% for option in question.options.all %}
+                        <label class="answer answer--choice">
+                          <input type="{% if kind == 'MS' %}checkbox{% else %}radio{% endif %}" name="q{{ question.pk }}" value="{{ option.pk }}">
+                          <span class="answer-mark" aria-hidden="true"></span>
+                          <span class="answer-text">{{ option.text }}</span>
+                        </label>
+                      {% endfor %}
+                    </div>
+                  {% elif kind == "FB" %}
+                    <div class="qbox-foot">
+                      <input class="text-answer" type="text" name="q{{ question.pk }}" placeholder="Type your answer"
+                             autocomplete="off" aria-labelledby="question-title-{{ question.pk }}">
+                    </div>
+                  {% else %}
+                    <div class="qbox-foot">
+                      <textarea class="text-answer text-answer--long" name="q{{ question.pk }}" rows="6" placeholder="Write your answer"
+                                aria-labelledby="question-title-{{ question.pk }}"></textarea>
+                    </div>
+                  {% endif %}
+                </section>
+              </li>
+            {% endwith %}
+          {% endfor %}
+        </ol>
+
+        <div class="submit-bar">
+          <span class="submit-bar-text" data-progress>{{ items|length }} question{{ items|length|pluralize }}</span>
+          <button class="button button--filled button--large" type="submit">Submit</button>
+        </div>
+      </form>
+    {% endif %}
+  </main>
+{% endblock %}

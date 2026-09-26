@@ -4,7 +4,12 @@ Adapted from the SPG8 / QuizPress senior design schema. The core is kept
 (courses, questions, answer options, tests, and the test-question link); the
 publisher, template, cover-page, and feedback tables were only used by the old
 dashboards and are dropped.
+
+Assignment, Attempt, and Response are new: they let students take a quiz online
+through a share link, with objective questions graded automatically.
 """
+
+import secrets
 
 from django.db import models
 
@@ -95,3 +100,93 @@ class TestQuestion(models.Model):
 
     def __str__(self) -> str:
         return f"Q{self.order} in {self.test.title}"
+
+
+# --------------------------------------------------------------------------
+# Giving a quiz to students
+# --------------------------------------------------------------------------
+
+# Share codes avoid look-alike characters (0/o, 1/l/i) so they're easy to read aloud.
+CODE_ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"
+
+
+def new_share_code() -> str:
+    return "".join(secrets.choice(CODE_ALPHABET) for _ in range(8))
+
+
+class Assignment(models.Model):
+    """A quiz handed out to students through a share link. Anyone with the
+    link can take it while it's open; no student accounts are needed."""
+
+    test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name="assignments")
+    code = models.CharField(max_length=16, unique=True, default=new_share_code)
+    is_open = models.BooleanField(default=True, help_text="Students can only submit while this is on.")
+    show_answers = models.BooleanField(
+        default=False, help_text="After submitting, students see which answers were right."
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.test.title} ({self.code})"
+
+
+class Attempt(models.Model):
+    """One student's submitted answers to an assignment."""
+
+    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name="attempts")
+    student_name = models.CharField(max_length=100)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    # Points so far. Essay answers count once the instructor grades them.
+    score = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    max_score = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+
+    class Meta:
+        ordering = ["-submitted_at"]
+
+    def __str__(self) -> str:
+        return f"{self.student_name}: {self.assignment.test.title}"
+
+    @property
+    def percent(self) -> int:
+        return round(self.score / self.max_score * 100) if self.max_score else 0
+
+    def update_score(self) -> None:
+        self.score = sum(r.points for r in self.responses.all() if r.points is not None)
+        self.save(update_fields=["score"])
+
+
+class Response(models.Model):
+    """A student's answer to one question. `points` is empty until the answer
+    is graded; objective questions are graded on submit, essays by hand."""
+
+    attempt = models.ForeignKey(Attempt, on_delete=models.CASCADE, related_name="responses")
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="responses")
+    order = models.PositiveIntegerField(default=0)
+    selected = models.ManyToManyField(AnswerOption, blank=True)
+    text = models.TextField(blank=True)
+    points = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+
+    class Meta:
+        ordering = ["order"]
+        constraints = [
+            models.UniqueConstraint(fields=["attempt", "question"], name="one_response_per_question"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.attempt.student_name}, Q{self.order}"
+
+    @property
+    def needs_grading(self) -> bool:
+        return self.points is None
+
+    @property
+    def status(self) -> str:
+        """'pending', 'full', 'partial', or 'zero', for showing how it went."""
+        if self.points is None:
+            return "pending"
+        if self.points >= self.question.points:
+            return "full"
+        return "partial" if self.points > 0 else "zero"

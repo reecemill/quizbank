@@ -1,0 +1,13 @@
+{% comment %}
+A switch for one of a share link's settings. Clicking it flips the setting.
+Usage: {% include "bank/includes/switch.html" with field="is_open" on=assignment.is_open label="…" %}
+{% endcomment %}
+<form method="post" action="{% url 'bank:assignment_settings' assignment.code %}">
+  {% csrf_token %}
+  <input type="hidden" name="field" value="{{ field }}">
+  <input type="hidden" name="value" value="{% if on %}0{% else %}1{% endif %}">
+  <button class="switch" type="submit" role="switch" aria-checked="{% if on %}true{% else %}false{% endif %}">
+    <span class="switch-track" aria-hidden="true"></span>
+    <span>{{ label }}</span>
+  </button>
+</form>

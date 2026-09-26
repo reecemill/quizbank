@@ -1,0 +1,72 @@
+{% load bank_ui %}
+{% comment %}
+One answered question, marked: the student's choices, the correct answers, and
+the points earned. `viewer` is "student" or "instructor" (for the wording), and
+`gradable` adds a points box to written answers.
+{% endcomment %}
+{% with question=response.question kind=response.question.question_type chosen=response.selected.all %}
+<article class="qbox" id="response-{{ response.pk }}" data-spotlight>
+  <header class="qbox-head">
+    <h2 class="qbox-title">Question {{ number }}</h2>
+    {% include "bank/includes/type_badge.html" %}
+    <span class="score-pill" data-status="{{ response.status }}">
+      {% if response.points is None %}Needs grading{% else %}{{ response.points|num }} / {{ question.points|points }}{% endif %}
+    </span>
+  </header>
+
+  <div class="qbox-body">
+    <div class="prose">{{ question|question_html }}</div>
+    {% if question.image %}
+      <figure class="qbox-figure"><img src="{{ question.image.url }}" alt="Image for this question" loading="lazy"></figure>
+    {% endif %}
+  </div>
+
+  {% if kind == "MC" or kind == "TF" or kind == "MS" %}
+    <ul class="answers answers--review{% if kind == 'MS' %} answers--multi{% endif %}">
+      {% for option in question.options.all %}
+        <li class="answer{% if option.is_correct %} is-correct{% elif option in chosen %} is-wrong{% endif %}{% if option in chosen %} is-chosen{% endif %}">
+          <span class="answer-mark" aria-hidden="true"></span>
+          <span class="answer-text">{{ option.text }}</span>
+          {% if option in chosen %}
+            <span class="answer-flag{% if not option.is_correct %} answer-flag--wrong{% endif %}">{% if viewer == "student" %}Your answer{% else %}Their answer{% endif %}</span>
+          {% elif option.is_correct %}
+            <span class="answer-flag answer-flag--muted">Right answer</span>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+    {% if not chosen %}<p class="qbox-note">No answer given.</p>{% endif %}
+
+  {% elif kind == "FB" %}
+    <div class="qbox-foot">
+      <span class="qbox-foot-label">{% if viewer == "student" %}Your answer{% else %}Their answer{% endif %}</span>
+      <div class="pills">
+        <span class="pill {% if response.status == 'full' %}pill--correct{% else %}pill--wrong{% endif %}">{{ response.text|default:"(blank)" }}</span>
+      </div>
+      <span class="qbox-foot-label">Accepted answers</span>
+      <div class="pills">
+        {% for option in question.options.all %}<span class="pill pill--accepted">{{ option.text }}</span>{% endfor %}
+      </div>
+    </div>
+
+  {% else %}
+    <div class="qbox-foot">
+      <span class="qbox-foot-label">{% if viewer == "student" %}Your answer{% else %}Their answer{% endif %}</span>
+      {% if response.text %}
+        <div class="essay-answer">{{ response.text }}</div>
+      {% else %}
+        <p class="essay-answer essay-answer--blank">No answer given.</p>
+      {% endif %}
+      {% if gradable %}
+        <label class="grade-field">
+          <span class="grade-label">Points</span>
+          <input class="grade-input" type="number" name="points-{{ response.pk }}" inputmode="decimal"
+                 min="0" max="{{ question.points|num }}" step="0.01"
+                 value="{% if response.points is not None %}{{ response.points|num }}{% endif %}">
+          <span class="grade-max">out of {{ question.points|points }}</span>
+        </label>
+      {% endif %}
+    </div>
+  {% endif %}
+</article>
+{% endwith %}

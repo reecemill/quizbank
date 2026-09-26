@@ -1,0 +1,11 @@
+{% load static bank_ui %}
+{# The top bar on student pages: just the app and the course, no instructor navigation. #}
+<header class="navbar navbar--simple">
+  <span class="brand">
+    <img src="{% static 'bank/icon.svg' %}" alt="" width="36" height="36">
+    <span>QuizBank</span>
+  </span>
+  <span class="nav-pill is-active nav-pill--static" style="--c: {{ course|course_color }}">
+    <span class="course-dot" aria-hidden="true"></span>{{ course.code }}
+  </span>
+</header>

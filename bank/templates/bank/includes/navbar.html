@@ -1,0 +1,92 @@
+{% load static bank_ui %}
+{# The floating glass tab bar. On phones the tabs move to the bottom of the screen (see app.css). #}
+<header class="navbar">
+  <a class="brand" href="{% url 'bank:dashboard' %}" aria-label="QuizBank dashboard">
+    <img src="{% static 'bank/icon.svg' %}" alt="" width="36" height="36">
+    <span>QuizBank</span>
+  </a>
+
+  <nav class="tabs" aria-label="Main" data-tabs>
+    <span class="tab-lens" aria-hidden="true" data-lens></span>
+    <a class="tab" href="{% url 'bank:dashboard' %}"{% if nav == "dashboard" %} aria-current="page"{% endif %}>
+      {% include "bank/icons/grid.svg" %}<span>Dashboard</span>
+    </a>
+    <a class="tab" href="{% url 'bank:questions' %}"{% if nav == "questions" %} aria-current="page"{% endif %}>
+      {% include "bank/icons/documents.svg" %}<span>Questions</span>
+    </a>
+    <a class="tab" href="{% url 'bank:import' %}"{% if nav == "import" %} aria-current="page"{% endif %}>
+      {% include "bank/icons/upload.svg" %}<span>Import</span>
+    </a>
+  </nav>
+
+  <div class="nav-actions">
+    {# Opens the ⌘K palette; without JavaScript it's a link to the question search. #}
+    <a class="nav-pill nav-search" href="{% url 'bank:questions' %}" aria-label="Search questions"
+       aria-keyshortcuts="Meta+K Control+K" data-open-palette>
+      {% include "bank/icons/search.svg" %}
+      <span class="nav-search-label">Search</span>
+      <kbd class="kbd" data-shortcut aria-hidden="true">⌘K</kbd>
+    </a>
+
+    <details class="menu" data-menu>
+      {% if nav == "course" and course %}
+        <summary class="nav-pill is-active" style="--c: {{ course|course_color }}" aria-label="Courses, current: {{ course.code }}">
+          <span class="course-dot" aria-hidden="true"></span><span class="nav-pill-text">{{ course.code }}</span>
+          <span class="chev">{% include "bank/icons/chevron-down.svg" %}</span>
+        </summary>
+      {% else %}
+        <summary class="nav-pill" aria-label="Courses">
+          {% include "bank/icons/book.svg" %}<span class="nav-pill-text">Courses</span>
+          <span class="chev">{% include "bank/icons/chevron-down.svg" %}</span>
+        </summary>
+      {% endif %}
+      <div class="menu-panel">
+        <p class="menu-label">Courses</p>
+        {% for c in nav_courses %}
+          <a class="menu-item" href="{% url 'bank:course' c.pk %}" style="--c: {{ c|course_color }}"
+             {% if nav == "course" and course.pk == c.pk %}aria-current="page"{% endif %}>
+            <span class="course-dot" aria-hidden="true"></span>
+            <span class="menu-item-text">
+              <span class="menu-item-title">{{ c.code }}</span>
+              {% if c.name %}<span class="menu-item-sub">{{ c.name }}</span>{% endif %}
+            </span>
+            <span class="menu-count" title="Questions">{{ c.num_questions }}</span>
+          </a>
+        {% empty %}
+          <p class="menu-empty">No courses yet. <a href="{% url 'bank:import' %}">Import a quiz</a> to add one.</p>
+        {% endfor %}
+        <div class="menu-sep"></div>
+        <a class="menu-item" href="{% url 'bank:dashboard' %}">
+          {% include "bank/icons/grid.svg" %}<span class="menu-item-text"><span class="menu-item-title">All courses</span></span>
+        </a>
+      </div>
+    </details>
+
+    <details class="menu" data-menu>
+      <summary class="avatar-button" aria-label="Account">
+        <span class="avatar" aria-hidden="true">{{ user|initials }}</span>
+      </summary>
+      <div class="menu-panel menu-panel--account">
+        <div class="menu-account">
+          <span class="avatar" aria-hidden="true">{{ user|initials }}</span>
+          <span class="menu-account-text">
+            <span class="menu-account-name">{{ user.get_full_name|default:user.get_username }}</span>
+            <span class="menu-account-sub">Signed in</span>
+          </span>
+        </div>
+        <div class="menu-sep"></div>
+        {% if user.is_staff %}
+          <a class="menu-item" href="{% url 'admin:index' %}">
+            {% include "bank/icons/settings.svg" %}<span class="menu-item-text"><span class="menu-item-title">Admin site</span></span>
+          </a>
+        {% endif %}
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button class="menu-item" type="submit">
+            {% include "bank/icons/log-out.svg" %}<span class="menu-item-text"><span class="menu-item-title">Log out</span></span>
+          </button>
+        </form>
+      </div>
+    </details>
+  </div>
+</header>

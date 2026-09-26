@@ -1,0 +1,51 @@
+{% load bank_ui %}
+{% comment %}
+A question laid out like a Canvas quiz question. `number` is optional: the quiz
+page passes one ("Question 3"); the question page doesn't.
+{% endcomment %}
+<article class="qbox" id="question-{{ question.pk }}" data-spotlight>
+  <header class="qbox-head">
+    {% if number %}
+      <h2 class="qbox-title">Question {{ number }}</h2>
+      {% include "bank/includes/type_badge.html" %}
+    {% else %}
+      {% include "bank/includes/type_badge.html" %}
+      <h2 class="qbox-title">{{ question.get_question_type_display }}</h2>
+    {% endif %}
+    <span class="qbox-points">{{ question.points|points }}</span>
+  </header>
+
+  <div class="qbox-body">
+    <div class="prose">{{ question|question_html }}</div>
+    {% if question.image %}
+      <figure class="qbox-figure"><img src="{{ question.image.url }}" alt="Image for this question" loading="lazy"></figure>
+    {% endif %}
+  </div>
+
+  {% with kind=question.question_type options=question.options.all %}
+    {% if kind == "MC" or kind == "TF" or kind == "MS" %}
+      <ul class="answers{% if kind == 'MS' %} answers--multi{% endif %}">
+        {% for option in options %}
+          <li class="answer{% if option.is_correct %} is-correct{% endif %}">
+            <span class="answer-mark" aria-hidden="true"></span>
+            <span class="answer-text">{{ option.text }}</span>
+            {% if option.is_correct %}<span class="answer-flag">Correct answer</span>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% elif kind == "FB" %}
+      <div class="qbox-foot key-only">
+        <span class="qbox-foot-label">Accepted answers</span>
+        <div class="pills">
+          {% for option in options %}<span class="pill pill--correct">{{ option.text }}</span>{% endfor %}
+        </div>
+      </div>
+      <div class="qbox-foot student-only"><div class="faux-field" aria-hidden="true"></div></div>
+    {% elif kind == "ES" %}
+      <p class="qbox-note key-only">Graded by hand. Essay questions have no answer key.</p>
+      <div class="qbox-foot student-only"><div class="faux-field faux-field--tall" aria-hidden="true"></div></div>
+    {% else %}
+      <p class="qbox-note">Imported as text only. Canvas “{{ question.source_type|default:"unknown" }}” questions aren't supported yet.</p>
+    {% endif %}
+  {% endwith %}
+</article>

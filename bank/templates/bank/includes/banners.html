@@ -1,0 +1,17 @@
+{% if messages %}
+  <div class="banners" aria-live="polite">
+    {% for message in messages %}
+      <div class="banner banner--{{ message.level_tag }}" role="{% if message.level_tag == 'error' %}alert{% else %}status{% endif %}"
+           {% if message.level_tag == "success" or message.level_tag == "info" %}data-autohide{% endif %}>
+        <span class="banner-icon">
+          {% if message.level_tag == "success" %}{% include "bank/icons/checkmark-circle.svg" %}
+          {% elif message.level_tag == "warning" %}{% include "bank/icons/warning.svg" %}
+          {% elif message.level_tag == "error" %}{% include "bank/icons/alert.svg" %}
+          {% else %}{% include "bank/icons/info.svg" %}{% endif %}
+        </span>
+        <div class="banner-text">{{ message|linebreaksbr }}</div>
+        <button class="banner-close" type="button" aria-label="Dismiss" data-banner-close>{% include "bank/icons/close.svg" %}</button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}

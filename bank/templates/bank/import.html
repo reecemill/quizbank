@@ -1,0 +1,46 @@
+{% extends "bank/base.html" %}
+
+{% block content %}
+  <form class="form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<p class="form-error" role="alert">{{ form.non_field_errors|join:" " }}</p>{% endif %}
+
+    <section class="group">
+      <h2 class="group-header">Canvas export</h2>
+      <div class="dropzone{% if form.file.errors %} has-error{% endif %}" data-dropzone>
+        <input type="file" name="file" id="id_file" accept=".zip,application/zip" required title=""
+               aria-describedby="file-help{% if form.file.errors %} file-error{% endif %}">
+        <span class="dropzone-icon">{% include "bank/icons/upload.svg" %}</span>
+        <label class="dropzone-title" for="id_file" data-dropzone-label>Choose a .zip file or drag it here</label>
+        <span class="dropzone-sub">Canvas quiz export (QTI), up to 20 MB</span>
+      </div>
+      {% if form.file.errors %}<p class="field-error" id="file-error">{{ form.file.errors|join:" " }}</p>{% endif %}
+      <p class="group-footer" id="file-help">
+        In Canvas, open the course and go to <strong>Settings</strong>, then <strong>Export Course Content</strong>.
+        Choose <strong>Quiz</strong>, pick the quizzes, and select <strong>Create Export</strong>. Download the .zip when it's ready.
+      </p>
+    </section>
+
+    <section class="group">
+      <h2 class="group-header">Course</h2>
+      <div class="list list--form">
+        <label class="row field">
+          <span class="field-label">Code</span>
+          <input type="text" name="course_code" value="{{ form.course_code.value|default:'' }}" placeholder="CS 101"
+                 required maxlength="50" list="course-codes" autocomplete="off">
+        </label>
+        <label class="row field">
+          <span class="field-label">Name</span>
+          <input type="text" name="course_name" value="{{ form.course_name.value|default:'' }}" placeholder="Optional" maxlength="250">
+        </label>
+      </div>
+      {% if form.course_code.errors %}<p class="field-error">{{ form.course_code.errors|join:" " }}</p>{% endif %}
+      <datalist id="course-codes">{% for code in course_codes %}<option value="{{ code }}">{% endfor %}</datalist>
+      <p class="group-footer">Pick one of your courses or type a new code. A new course gets the name you enter here.</p>
+    </section>
+
+    <div class="form-actions">
+      <button class="button button--filled button--large" type="submit">Import</button>
+    </div>
+  </form>
+{% endblock %}

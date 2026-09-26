@@ -1,0 +1,30 @@
+{% load bank_ui %}
+{# The ⌘K command palette. app.js opens it; without JavaScript the Search pill is a plain link. #}
+<dialog class="palette" aria-label="Search" data-palette>
+  <form class="palette-field" role="search" action="{% url 'bank:questions' %}" method="get">
+    {% include "bank/icons/search.svg" %}
+    <input type="search" name="q" placeholder="Search all questions…" aria-label="Search all questions" autocomplete="off">
+    <kbd class="kbd" aria-hidden="true">esc</kbd>
+  </form>
+  {% if nav_courses %}
+    <div class="palette-body">
+      <p class="menu-label">Jump to course</p>
+      {% for c in nav_courses %}
+        <a class="menu-item" href="{% url 'bank:course' c.pk %}" style="--c: {{ c|course_color }}"
+           data-palette-course="{{ c.code|lower }} {{ c.name|lower }}">
+          <span class="course-dot" aria-hidden="true"></span>
+          <span class="menu-item-text">
+            <span class="menu-item-title">{{ c.code }}</span>
+            {% if c.name %}<span class="menu-item-sub">{{ c.name }}</span>{% endif %}
+          </span>
+          {% include "bank/icons/arrow-forward.svg" %}
+        </a>
+      {% endfor %}
+      <p class="menu-empty" data-palette-empty hidden>No matching courses. Press Enter to search the questions.</p>
+    </div>
+  {% endif %}
+  <p class="palette-hint">
+    <kbd class="kbd">↵</kbd><span>Search questions</span>
+    <kbd class="kbd">esc</kbd><span>Close</span>
+  </p>
+</dialog>

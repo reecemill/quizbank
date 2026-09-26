@@ -1,0 +1,46 @@
+{% extends "bank/base.html" %}
+{% load bank_ui %}
+
+{% block actions %}
+  {% if user.is_staff %}
+    <a class="button button--plain" href="{% url 'admin:bank_question_change' question.pk %}">Edit</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  {% include "bank/includes/question_box.html" %}
+
+  <section class="group">
+    <h2 class="group-header">Details</h2>
+    <dl class="details">
+      <div class="detail"><dt>Course</dt><dd><a href="{% url 'bank:course' question.course.pk %}">{{ question.course }}</a></dd></div>
+      <div class="detail"><dt>Type</dt><dd>{{ question.get_question_type_display }}</dd></div>
+      {% if question.question_type == "OT" and question.source_type %}
+        <div class="detail"><dt>Canvas type</dt><dd>{{ question.source_type }}</dd></div>
+      {% endif %}
+      <div class="detail"><dt>Points</dt><dd>{{ question.points|points }}</dd></div>
+      <div class="detail"><dt>Added</dt><dd>{{ question.created_at|date:"M j, Y" }}</dd></div>
+    </dl>
+  </section>
+
+  <section class="group">
+    <h2 class="group-header">Appears in</h2>
+    {% with quizzes=question.tests.all %}
+      {% if quizzes %}
+        <ul class="list list--iconed">
+          {% for quiz in quizzes %}
+            <li>
+              <a class="row" href="{% url 'bank:quiz' quiz.pk %}#question-{{ question.pk }}" style="--glow: {{ question.course|course_color }}" data-spotlight>
+                <span class="row-icon" style="--c: {{ question.course|course_color }}">{% include "bank/icons/list.svg" %}</span>
+                <span class="row-main"><span class="row-title">{{ quiz.title }}</span></span>
+                {% include "bank/icons/arrow-forward.svg" %}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="list"><div class="row row--muted">Not in any quiz</div></div>
+      {% endif %}
+    {% endwith %}
+  </section>
+{% endblock %}

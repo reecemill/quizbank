@@ -1,0 +1,69 @@
+{% extends "bank/base.html" %}
+{% load bank_ui %}
+
+{% block actions %}
+  {% if course %}
+    <a class="button button--tinted button--small" href="{% url 'bank:import' %}?course={{ course.code|urlencode }}">Import</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  {% if course %}{% include "bank/includes/course_tabs.html" with active="questions" %}{% endif %}
+
+  <form class="search-field search-field--page" role="search" method="get" data-live-search>
+    {% include "bank/icons/search.svg" %}
+    <input type="search" name="q" value="{{ query }}" aria-label="Search questions" autocomplete="off"
+           placeholder="Search {% if course %}{{ course.code }}{% else %}all questions{% endif %}">
+    {% if type_code %}<input type="hidden" name="type" value="{{ type_code }}">{% endif %}
+  </form>
+
+  <div id="results">
+    <nav class="chips" aria-label="Question type">
+      {% for chip in type_chips %}
+        <a class="chip" href="{{ chip.url }}"{% if chip.selected %} aria-current="true"{% endif %}>{{ chip.label }}</a>
+      {% endfor %}
+    </nav>
+
+    {% if questions %}
+      <section class="group">
+        <h2 class="group-header">
+          {% with count=page_obj.paginator.count %}
+            {% if query %}{{ count }} result{{ count|pluralize }} for “{{ query }}”{% else %}{{ count }} question{{ count|pluralize }}{% endif %}
+          {% endwith %}
+        </h2>
+        <ul class="list list--questions">
+          {% for question in questions %}
+            <li>
+              <a class="row" href="{% url 'bank:question' question.pk %}" data-type="{{ question.question_type }}" data-spotlight>
+                {% include "bank/includes/type_badge.html" %}
+                <span class="row-main">
+                  <span class="row-title clamp-2">{{ question.text|default:"(No text)" }}</span>
+                  {% if not course %}<span class="row-sub">{{ question.course.code }}</span>{% endif %}
+                </span>
+                <span class="row-detail">{{ question.points|points }}</span>
+                {% include "bank/icons/arrow-forward.svg" %}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+
+      {% if is_paginated %}
+        <nav class="pager" aria-label="Pages">
+          {% if page_obj.has_previous %}
+            <a class="button button--plain" href="?{% if page_query %}{{ page_query }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">{% include "bank/icons/chevron-back.svg" %}Previous</a>
+          {% else %}<span></span>{% endif %}
+          <span class="pager-status">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+            <a class="button button--plain" href="?{% if page_query %}{{ page_query }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Next{% include "bank/icons/chevron-forward.svg" %}</a>
+          {% else %}<span></span>{% endif %}
+        </nav>
+      {% endif %}
+    {% elif query or type_code %}
+      {% include "bank/includes/empty_state.html" with icon="bank/icons/search.svg" title="No results" text="Try another word, or a different question type." %}
+    {% else %}
+      {% url "bank:import" as import_url %}
+      {% include "bank/includes/empty_state.html" with icon="bank/icons/documents.svg" title="No questions yet" text="Import a Canvas quiz, and its questions show up here." action_url=import_url action_label="Import a Quiz" %}
+    {% endif %}
+  </div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "bank/base.html" %}
+{% load bank_ui %}
+
+{% block subtitle %}
+  <p class="subtitle">
+    <a href="{% url 'bank:course' course.pk %}">{{ course.code }}</a> ·
+    {{ items|length }} question{{ items|length|pluralize }} · {{ total_points|points }}
+  </p>
+{% endblock %}
+
+{% block head_actions %}
+  {% if items %}
+    <form method="post" action="{% url 'bank:give' quiz.pk %}">
+      {% csrf_token %}
+      <button class="button button--filled" type="submit">{% include "bank/icons/school.svg" %}Give this quiz</button>
+    </form>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  {% if assignments %}
+    <section class="group">
+      <h2 class="group-header">Given to students</h2>
+      <ul class="list list--iconed">
+        {% for given in assignments %}
+          <li>
+            <a class="row" href="{% url 'bank:results' given.code %}" style="--glow: {{ course|course_color }}" data-spotlight>
+              <span class="row-icon" style="--c: {{ course|course_color }}">{% include "bank/icons/school.svg" %}</span>
+              <span class="row-main">
+                <span class="row-title">Link <span class="mono">{{ given.code }}</span></span>
+                <span class="row-sub">{{ given.num_attempts }} submission{{ given.num_attempts|pluralize }} · {% if given.is_open %}open{% else %}closed{% endif %}</span>
+              </span>
+              <span class="row-detail">Results</span>
+              {% include "bank/icons/arrow-forward.svg" %}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  <div class="quiz">
+    {# Pure CSS switches the view (see .quiz:has in app.css); app.js only remembers the choice. #}
+    <fieldset class="segmented" data-remember="quiz-view">
+      <legend class="visually-hidden">Show</legend>
+      <label class="segment"><input type="radio" name="quiz-view" value="key" checked><span>Answer key</span></label>
+      <label class="segment"><input type="radio" name="quiz-view" value="student"><span>Student view</span></label>
+    </fieldset>
+
+    {% if quiz.instructions %}
+      <section class="group">
+        <h2 class="group-header">Instructions</h2>
+        <div class="card prose">{{ quiz.instructions|linebreaks }}</div>
+      </section>
+    {% endif %}
+
+    {% if items %}
+      <ol class="question-stack">
+        {% for item in items %}
+          <li>{% include "bank/includes/question_box.html" with question=item.question number=forloop.counter %}</li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      {% include "bank/includes/empty_state.html" with icon="bank/icons/documents.svg" title="No questions" text="This quiz is empty." %}
+    {% endif %}
+  </div>
+{% endblock %}

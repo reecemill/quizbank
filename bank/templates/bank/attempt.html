@@ -1,0 +1,31 @@
+{% extends "bank/base.html" %}
+{% load bank_ui %}
+
+{% block subtitle %}
+  <p class="subtitle">
+    {{ quiz.title }} · submitted <time datetime="{{ attempt.submitted_at|date:'c' }}" data-local>{{ attempt.submitted_at|date:"M j, g:i A" }} UTC</time>
+  </p>
+{% endblock %}
+
+{% block head_actions %}
+  <span class="score-pill score-pill--large" data-band="{{ attempt.percent|grade_band }}">
+    {{ attempt.score|num }} / {{ attempt.max_score|num }} · {{ attempt.percent }}%
+  </span>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    {% csrf_token %}
+    <ol class="question-stack">
+      {% for response in responses %}
+        <li>{% include "bank/includes/response_box.html" with number=forloop.counter viewer="instructor" gradable=True %}</li>
+      {% endfor %}
+    </ol>
+    {% if has_hand_graded %}
+      <div class="submit-bar">
+        <span class="submit-bar-text">Give points for the written answers, then save.</span>
+        <button class="button button--filled button--large" type="submit">Save grades</button>
+      </div>
+    {% endif %}
+  </form>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "bank/base.html" %}
+{% load bank_ui %}
+
+{% block title %}Submitted · {{ quiz.title }}{% endblock %}
+
+{% block body %}
+  <a class="skip-link" href="#content">Skip to content</a>
+  {% include "bank/includes/student_bar.html" %}
+
+  <main class="content" id="content" tabindex="-1">
+    <section class="done-card" data-spotlight>
+      <div class="score-ring" style="--p: {{ attempt.percent }}" role="img"
+           aria-label="Score: {{ attempt.score|num }} out of {{ attempt.max_score|num }} points, {{ attempt.percent }} percent">
+        <span class="score-ring-value">{{ attempt.percent }}%</span>
+        <span class="score-ring-label">{{ attempt.score|num }} / {{ attempt.max_score|num }} pts</span>
+      </div>
+      <h1 class="done-title">Thanks, {{ attempt.student_name }}</h1>
+      <p class="done-text">
+        Your answers to <strong>{{ quiz.title }}</strong> are in.
+        {% if pending %}
+          Your instructor still has to grade {{ pending }} written answer{{ pending|pluralize }}, so your score may go up.
+        {% endif %}
+      </p>
+      <a class="done-reset" href="{% url 'bank:take' assignment.code %}?new=1">Not {{ attempt.student_name }}? Start a new attempt</a>
+    </section>
+
+    {% if responses %}
+      <section class="group">
+        <h2 class="group-header">Your answers</h2>
+        <ol class="question-stack">
+          {% for response in responses %}
+            <li>{% include "bank/includes/response_box.html" with number=forloop.counter viewer="student" %}</li>
+          {% endfor %}
+        </ol>
+      </section>
+    {% endif %}
+  </main>
+{% endblock %}

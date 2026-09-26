@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AnswerOption, Course, Question, Test, TestQuestion
+from .models import AnswerOption, Assignment, Attempt, Course, Question, Response, Test, TestQuestion
 
 
 class AnswerOptionInline(admin.TabularInline):
@@ -37,3 +37,23 @@ class TestAdmin(admin.ModelAdmin):
     list_display = ["title", "course", "created_at"]
     list_filter = ["course"]
     inlines = [TestQuestionInline]
+
+
+class ResponseInline(admin.TabularInline):
+    model = Response
+    extra = 0
+    fields = ["order", "question", "text", "points"]
+    readonly_fields = ["order", "question", "text"]
+
+
+@admin.register(Assignment)
+class AssignmentAdmin(admin.ModelAdmin):
+    list_display = ["test", "code", "is_open", "show_answers", "created_at"]
+    list_filter = ["is_open"]
+
+
+@admin.register(Attempt)
+class AttemptAdmin(admin.ModelAdmin):
+    list_display = ["student_name", "assignment", "score", "max_score", "submitted_at"]
+    search_fields = ["student_name"]
+    inlines = [ResponseInline]

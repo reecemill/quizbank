@@ -1,0 +1,5 @@
+{# The course menu, drawn as a segmented control with a sliding thumb. #}
+<nav class="segmented" aria-label="Course sections">
+  <a class="segment" href="{% url 'bank:course' course.pk %}"{% if active == "questions" %} aria-current="page"{% endif %}>Questions</a>
+  <a class="segment" href="{% url 'bank:course_quizzes' course.pk %}"{% if active == "quizzes" %} aria-current="page"{% endif %}>Quizzes</a>
+</nav>

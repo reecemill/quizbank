@@ -1,0 +1,94 @@
+{% extends "bank/base.html" %}
+{% load bank_ui %}
+
+{% block head_actions %}
+  {% if attempts %}
+    <a class="button button--tinted" href="{% url 'bank:results_csv' assignment.code %}">{% include "bank/icons/download.svg" %}Download CSV</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <section class="share" style="--glow: {{ course|course_color }}" data-spotlight>
+    <div class="share-top">
+      <label class="share-label" for="share-url">Student link</label>
+      <span class="share-status{% if assignment.is_open %} is-open{% endif %}">{% if assignment.is_open %}Open{% else %}Closed{% endif %}</span>
+    </div>
+    <div class="share-row">
+      <input class="share-url" id="share-url" type="text" value="{{ share_url }}" readonly data-copy-source>
+      <button class="button button--filled" type="button" data-copy>{% include "bank/icons/copy.svg" %}<span data-copy-label>Copy link</span></button>
+      <a class="button button--tinted" href="{{ share_url }}" target="_blank" rel="noopener" title="Open the student page in a new tab">{% include "bank/icons/open.svg" %}Open</a>
+    </div>
+    <p class="share-help">
+      Students open the link, type their name, and take the quiz. Multiple choice, true/false, multiple selection,
+      and fill-in-the-blank answers are graded the moment they submit. Written answers wait for you.
+    </p>
+    <div class="switches">
+      {% include "bank/includes/switch.html" with field="is_open" on=assignment.is_open label="Accept submissions" %}
+      {% include "bank/includes/switch.html" with field="show_answers" on=assignment.show_answers label="Show students the answers after they submit" %}
+    </div>
+  </section>
+
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-value">{{ attempts|length }}</span>
+      <span class="stat-label">Submission{{ attempts|length|pluralize }}</span>
+    </div>
+    <div class="stat"{% if average is not None %} data-band="{{ average|grade_band }}"{% endif %}>
+      <span class="stat-value">{% if average is not None %}{{ average }}%{% else %}–{% endif %}</span>
+      <span class="stat-label">Average score</span>
+    </div>
+    <div class="stat{% if to_grade %} stat--alert{% endif %}">
+      <span class="stat-value">{{ to_grade }}</span>
+      <span class="stat-label">Answer{{ to_grade|pluralize }} to grade</span>
+    </div>
+  </div>
+
+  <section class="group">
+    <h2 class="group-header">Submissions</h2>
+    {% if attempts %}
+      <ul class="list">
+        {% for attempt in attempts %}
+          <li>
+            <a class="row" href="{% url 'bank:attempt' assignment.code attempt.pk %}" data-band="{{ attempt.percent|grade_band }}" data-spotlight>
+              <span class="avatar avatar--small" aria-hidden="true">{{ attempt.student_name|initials }}</span>
+              <span class="row-main">
+                <span class="row-title">{{ attempt.student_name }}</span>
+                <span class="row-sub"><time datetime="{{ attempt.submitted_at|date:'c' }}" data-local>{{ attempt.submitted_at|date:"M j, g:i A" }} UTC</time></span>
+              </span>
+              {% if attempt.num_pending %}<span class="score-pill" data-status="pending">{{ attempt.num_pending }} to grade</span>{% endif %}
+              <span class="row-detail">{{ attempt.score|num }} / {{ attempt.max_score|num }}</span>
+              <span class="score-pill" data-band="{{ attempt.percent|grade_band }}">{{ attempt.percent }}%</span>
+              {% include "bank/icons/arrow-forward.svg" %}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      {% include "bank/includes/empty_state.html" with icon="bank/icons/school.svg" title="No submissions yet" text="Share the link above. Each student's score shows up here as soon as they submit." %}
+    {% endif %}
+  </section>
+
+  {% if attempts %}
+    <section class="group">
+      <h2 class="group-header">By question</h2>
+      <ul class="list">
+        {% for row in breakdown %}
+          <li>
+            <a class="row" href="{% url 'bank:question' row.question.pk %}" data-type="{{ row.question.question_type }}" data-spotlight>
+              <span class="row-number">Q{{ row.number }}</span>
+              <span class="row-main"><span class="row-title clamp-2">{{ row.question.text|default:"(No text)" }}</span></span>
+              {% if row.percent is None %}
+                <span class="row-detail">Not graded yet</span>
+              {% else %}
+                <span class="meter" style="--p: {{ row.percent }}" data-band="{{ row.percent|grade_band }}" aria-hidden="true"><span></span></span>
+                <span class="row-detail meter-value">{{ row.percent }}%</span>
+              {% endif %}
+              {% include "bank/icons/arrow-forward.svg" %}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+      <p class="group-footer">The share of points the class earned on each question, from the answers graded so far.</p>
+    </section>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "bank/base.html" %}
+{% load bank_ui %}
+
+{% block actions %}
+  <a class="button button--tinted button--small" href="{% url 'bank:import' %}?course={{ course.code|urlencode }}">Import</a>
+{% endblock %}
+
+{% block content %}
+  {% include "bank/includes/course_tabs.html" with active="quizzes" %}
+
+  {% if quizzes %}
+    <section class="group">
+      <h2 class="group-header">{{ quizzes|length }} quiz{{ quizzes|length|pluralize:"zes" }}</h2>
+      <ul class="list list--iconed">
+        {% for quiz in quizzes %}
+          <li>
+            <a class="row" href="{% url 'bank:quiz' quiz.pk %}" style="--glow: {{ course|course_color }}" data-spotlight>
+              <span class="row-icon" style="--c: {{ course|course_color }}">{% include "bank/icons/list.svg" %}</span>
+              <span class="row-main">
+                <span class="row-title">{{ quiz.title }}</span>
+                <span class="row-sub">{{ quiz.num_questions }} question{{ quiz.num_questions|pluralize }} · {{ quiz.total_points|points }}</span>
+              </span>
+              <span class="row-detail">{{ quiz.created_at|date:"M j" }}</span>
+              {% include "bank/icons/arrow-forward.svg" %}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% else %}
+    {% url "bank:import" as import_url %}
+    {% include "bank/includes/empty_state.html" with icon="bank/icons/list.svg" title="No quizzes yet" text="Quizzes you import from Canvas show up here." action_url=import_url action_label="Import a Quiz" %}
+  {% endif %}
+{% endblock %}
