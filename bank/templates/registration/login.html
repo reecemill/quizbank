@@ -9,6 +9,10 @@
       <img class="login-icon" src="{% static 'bank/icon.svg' %}" alt="" width="72" height="72">
       <h1 class="login-title">QuizBank</h1>
       <p class="login-sub">Sign in to your question bank</p>
+      {% if demo_username %}
+        <p class="login-demo">This is a public demo, and it resets now and then. Sign in as
+          <strong>{{ demo_username }}</strong> with password <strong>{{ demo_password }}</strong>.</p>
+      {% endif %}
 
       <form method="post" action="{% url 'login' %}">
         {% csrf_token %}
@@ -19,12 +23,13 @@
         <div class="list list--form">
           <label class="row field">
             <span class="visually-hidden">Username</span>
-            <input type="text" name="username" value="{{ form.username.value|default:'' }}" placeholder="Username"
+            <input type="text" name="username" value="{{ form.username.value|default:demo_username }}" placeholder="Username"
                    autocomplete="username" autocapitalize="none" spellcheck="false" autofocus required>
           </label>
           <label class="row field">
             <span class="visually-hidden">Password</span>
-            <input type="password" name="password" placeholder="Password" autocomplete="current-password" required>
+            <input type="password" name="password" placeholder="Password" autocomplete="current-password"
+                   {% if demo_password %}value="{{ demo_password }}" {% endif %}required>
           </label>
         </div>
         <button class="button button--filled button--large button--block" type="submit">Sign In</button>

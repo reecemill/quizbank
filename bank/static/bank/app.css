@@ -1922,6 +1922,8 @@ a.row:hover .badge {
   letter-spacing: -0.04em;
 }
 .login-sub { margin: 0 0 28px; color: var(--text-2); }
+.login-demo { margin: -12px 0 24px; color: var(--text-2); font-size: 14px; }
+.login-demo strong { color: var(--text); font-weight: 600; }
 .login form { display: grid; gap: 18px; text-align: left; }
 .login .form-error { margin: 0; }
 .login .list { box-shadow: none; }

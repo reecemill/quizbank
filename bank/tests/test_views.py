@@ -31,6 +31,17 @@ class LoginTests(TestCase):
         response = self.client.get(reverse("login"))
         self.assertContains(response, "Sign In")
 
+    def test_login_page_hides_demo_account_by_default(self):
+        response = self.client.get(reverse("login"))
+        self.assertNotContains(response, "public demo")
+
+    @override_settings(QUIZBANK_DEMO_USERNAME="demo", QUIZBANK_DEMO_PASSWORD="demo-password")
+    def test_login_page_shows_and_fills_in_demo_account(self):
+        response = self.client.get(reverse("login"))
+        self.assertContains(response, "public demo")
+        self.assertContains(response, 'value="demo"')
+        self.assertContains(response, 'value="demo-password"')
+
     def test_logout_signs_out(self):
         user = get_user_model().objects.create_user("teacher", password="a-long-password")
         self.client.force_login(user)

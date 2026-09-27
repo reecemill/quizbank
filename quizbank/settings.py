@@ -35,6 +35,19 @@ ALLOWED_HOSTS = [
     h.strip() for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()
 ]
 
+# Full origins (https://example.com) allowed to post forms. Needed when the app
+# is served over HTTPS under a public domain.
+CSRF_TRUSTED_ORIGINS = [
+    o.strip() for o in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()
+]
+
+# Behind a proxy that terminates HTTPS (like Hugging Face Spaces): trust its
+# X-Forwarded-Proto header and send cookies over HTTPS only.
+if env_bool("DJANGO_BEHIND_HTTPS_PROXY"):
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -47,6 +60,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # Serves static files when DEBUG is off (after `collectstatic`).
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -115,9 +130,18 @@ LOGOUT_REDIRECT_URL = "login"
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+}
 
 # Images extracted from imported Canvas quizzes.
 MEDIA_URL = "media/"
 MEDIA_ROOT = Path(os.environ.get("MEDIA_ROOT", BASE_DIR / "media"))
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Public demo: a shared account whose username and password are shown on the
+# sign-in page. Leave unset for a real deployment.
+QUIZBANK_DEMO_USERNAME = os.environ.get("QUIZBANK_DEMO_USERNAME", "")
+QUIZBANK_DEMO_PASSWORD = os.environ.get("QUIZBANK_DEMO_PASSWORD", "")
