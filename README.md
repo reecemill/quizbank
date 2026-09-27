@@ -164,7 +164,7 @@ To publish the committed code to the Space (it rebuilds in about 10 minutes):
 
 ```bash
 hf auth login                                    # once, with a Hugging Face write token
-python deploy/push_to_space.py rmill/quizbank
+python deploy/push_to_space.py rmill/quizbank-ai
 ```
 
 `deploy/start.sh` reads the public hostname Hugging Face provides and sets the allowed host, trusted origin, and HTTPS cookie settings from it. Without a `DJANGO_SECRET_KEY` secret it makes a random one on each start. Images inside imported Canvas quizzes aren't shown in the demo, because Django doesn't serve uploaded files when `DEBUG` is off.
