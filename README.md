@@ -151,7 +151,7 @@ The tests build Canvas-style exports and dataset files in memory, use a temporar
 
 ## Public demo
 
-The `Dockerfile` builds a self-contained demo: it trains the essay grader, then creates a database with the sample courses, the SciQ course with topic tags, a simulated class on the first CS 101 quiz, and a shared `demo` account whose password is shown on the sign-in page. The demo account is a regular user, so it can use every page but not the admin. Every container starts from that same database, so the demo resets whenever it restarts.
+The `Dockerfile` builds a self-contained demo: it trains the essay grader, then creates a database with the sample courses, the SciQ course with topic tags, a simulated class on the first CS 101 quiz for the analytics page, a sample class of eight students on the same quiz whose written answers are waiting to be graded (with the AI suggestions already computed), and a shared `demo` account whose password is shown on the sign-in page. The demo account is a regular user, so it can use every page but not the admin. Every container starts from that same database, so the demo resets whenever it restarts.
 
 It runs on a Hugging Face Space (Docker, which needs a PRO account; 2 CPUs, 16 GB of memory, enough for PyTorch and the embedding model). To try the image locally:
 
