@@ -153,7 +153,7 @@ The tests build Canvas-style exports and dataset files in memory, use a temporar
 
 The `Dockerfile` builds a self-contained demo: it trains the essay grader, then creates a database with the sample courses, the SciQ course with topic tags, a simulated class on the first CS 101 quiz, and a shared `demo` account whose password is shown on the sign-in page. The demo account is a regular user, so it can use every page but not the admin. Every container starts from that same database, so the demo resets whenever it restarts.
 
-It runs on a free Hugging Face Space (Docker, 2 CPUs, 16 GB of memory, enough for PyTorch and the embedding model). To try the image locally:
+It runs on a Hugging Face Space (Docker, which needs a PRO account; 2 CPUs, 16 GB of memory, enough for PyTorch and the embedding model). To try the image locally:
 
 ```bash
 docker build -t quizbank-demo .
@@ -164,7 +164,7 @@ To publish the committed code to the Space (it rebuilds in about 10 minutes):
 
 ```bash
 hf auth login                                    # once, with a Hugging Face write token
-python deploy/push_to_space.py reecemill/quizbank
+python deploy/push_to_space.py rmill/quizbank
 ```
 
 `deploy/start.sh` reads the public hostname Hugging Face provides and sets the allowed host, trusted origin, and HTTPS cookie settings from it. Without a `DJANGO_SECRET_KEY` secret it makes a random one on each start. Images inside imported Canvas quizzes aren't shown in the demo, because Django doesn't serve uploaded files when `DEBUG` is off.

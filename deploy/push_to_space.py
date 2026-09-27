@@ -1,7 +1,7 @@
 """Publish the committed code to a Hugging Face Space, which rebuilds and restarts it.
 
     hf auth login                                   # once, with a write token
-    python deploy/push_to_space.py <user>/<space>   # e.g. reecemill/quizbank
+    python deploy/push_to_space.py <user>/<space>   # e.g. rmill/quizbank
 
 Uploads the files in the last commit (uncommitted changes are left out), with
 deploy/huggingface/README.md as the Space's README, which holds its settings.
